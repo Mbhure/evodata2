@@ -1,0 +1,32 @@
+
+db.transactions.aggregate([
+    {
+        $lookup: {
+            from: "users", localField: "user_id", foreignField: "_id", as: "user"
+        }
+    },
+
+    {
+        $unwind: "$user"
+    },
+
+    {
+       $group: {
+        _id: "$user.name", totalbalance: { $sum: { $cond: { if: {$eq: ["$type", "deposit"]}, then: "$amount", else: {$subtract: [0,"$amount"]} 
+           }
+          } 
+         }
+        } 
+    },
+
+    {
+        $project: {
+            _id:1, totalbalance: 1
+        }
+    },
+    {
+        $sort: {
+            totalBalance: -1
+        }
+    }
+]).pretty();
